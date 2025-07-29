@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+//#include "selectionMenu.hpp"
 
 #define BUTTON_COUNT 4
 #define SCREEN_WIDTH 1280
@@ -93,7 +94,7 @@ void showMenu() {
 			iShowImage(backButton.x, backButton.y, backButton.width, backButton.height, backButtonImage);
 		}
 	}
-	else if (currentScreen == 1 || currentScreen == 2) { 
+	else if (currentScreen == 1 || currentScreen == 2) {
 		iSetColor(255, 255, 255);
 		iFilledRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		iSetColor(0, 0, 0);
@@ -113,26 +114,7 @@ void showMenu() {
 		}
 	}
 	else if (currentScreen == 10 || currentScreen == 11) { // play options selection
-		iSetColor(255, 255, 255);
-		iFilledRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		iSetColor(0, 0, 0);
-
-		// Display which option was chosen
-		if (currentScreen == 10) iText(SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, "Option 1 Screen", GLUT_BITMAP_TIMES_ROMAN_24);
-		else iText(SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, "Option 2 Screen", GLUT_BITMAP_TIMES_ROMAN_24);
-
-		// Back Button
-		if (backButtonHover) {
-			double zoomFactor = 1.1;
-			int newWidth = backButton.width * zoomFactor;
-			int newHeight = backButton.height * zoomFactor;
-			int newX = backButton.x - (newWidth - backButton.width) / 2;
-			int newY = backButton.y - (newHeight - backButton.height) / 2;
-			iShowImage(newX, newY, newWidth, newHeight, backButtonImage);
-		}
-		else {
-			iShowImage(backButton.x, backButton.y, backButton.width, backButton.height, backButtonImage);
-		}
+		showSelectionMenu();
 	}
 }
 
@@ -174,17 +156,13 @@ void handleMenuClick(int button, int state, int mx, int my) {
 		}
 		else if (currentScreen == 10 || currentScreen == 11) { // On final placeholder screens
 			// Check for back button click
-			if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
-				my >= backButton.y && my <= backButton.y + backButton.height) {
-				currentScreen = 0; // Go back to the Play Sub-Menu
-			}
+			handleSelectionMenuClick(int mx, int my);
 		}
 	}
 }
 
 // Load all images and set button positions
 void loadMenuAssets() {
-
 	mainMenuScreen = iLoadImage("BG/main.png");
 	subMenuBackground = iLoadImage("BG/mian.png");
 
@@ -197,20 +175,6 @@ void loadMenuAssets() {
 
 	optionButtonImages[0] = iLoadImage("UiElements/buttons.png");
 	optionButtonImages[1] = iLoadImage("UiElements/buttons.png");
-
-	mainMenuScreen = iLoadImage("Images/BG/main.png");
-	subMenuBackground = iLoadImage("Images/BG/L2.png");
-
-	// Load Back button image and define its properties
-	backButtonImage = iLoadImage("Images/Back.png");
-	backButton.x = 50;
-	backButton.y = 50;
-	backButton.width = 150;
-	backButton.height = 75;
-
-	optionButtonImages[0] = iLoadImage("Images/1vs1.png");
-	optionButtonImages[1] = iLoadImage("Images/robot.png");
-
 
 	// two option buttons
 	int optWidth = 250;
@@ -232,7 +196,6 @@ void loadMenuAssets() {
 
 	// main menu buttons
 	char imagePath[100];
-
 	int startY = 525;
 	for (int i = 0; i < BUTTON_COUNT; i++) {
 		sprintf_s(imagePath, sizeof(imagePath), "UiElements/button%d.png", i + 1);
@@ -245,18 +208,6 @@ void loadMenuAssets() {
 	}
 }
 
-
-	int startY = 500;
-	for (int i = 0; i < BUTTON_COUNT; i++) {
-		sprintf_s(imagePath, sizeof(imagePath), "Images/UiElements/button%d.png", i + 1);
-		buttonImages[i] = iLoadImage(imagePath);
-
-		buttons[i].x = 50;
-		buttons[i].y = startY - i * 120;
-		buttons[i].width = 200;
-		buttons[i].height = 100;
-	}
-}
-
+#endif 
 #endif 
 
