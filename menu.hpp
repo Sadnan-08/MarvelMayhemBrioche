@@ -3,9 +3,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-//#include "selectionMenu.hpp"
 
 #define BUTTON_COUNT 4
+#define CHARACTER_COUNT 6
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
@@ -25,6 +25,10 @@ int optionButtonImages[2];
 int hoveredOptionButtonIndex = -1;
 int subMenuBackground;
 
+// Variables for character selection
+int characterImages[CHARACTER_COUNT];
+int selectedCharacterP1 = -1;
+int selectedCharacterP2 = -1;
 
 // Back button variables
 int backButtonImage;
@@ -41,6 +45,8 @@ struct Button {
 Button buttons[BUTTON_COUNT];
 Button backButton;
 Button optionButtons[2];
+Button characterButtonsP1[CHARACTER_COUNT];
+Button characterButtonsP2[CHARACTER_COUNT];
 
 
 // menu 
@@ -73,7 +79,7 @@ void showMenu() {
 		//  hover effect for option buttons
 		if (hoveredOptionButtonIndex != -1) {
 			int i = hoveredOptionButtonIndex;
-			double zoomFactor = 1.1;
+			double zoomFactor = 1.06;
 			int newWidth = optionButtons[i].width * zoomFactor;
 			int newHeight = optionButtons[i].height * zoomFactor;
 			int newX = optionButtons[i].x - (newWidth - optionButtons[i].width) / 2;
@@ -114,8 +120,52 @@ void showMenu() {
 		}
 	}
 	else if (currentScreen == 10 || currentScreen == 11) { // play options selection
-		showSelectionMenu();
+		iSetColor(255, 255, 255);
+		iFilledRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		// Display which option was chosen
+		if (currentScreen == 10) {
+			iSetColor(255, 255, 255);
+			iFilledRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+			// Titles
+			iSetColor(0, 0, 0);
+			iText(100, SCREEN_HEIGHT - 40, "Player 1: Choose Your Character", GLUT_BITMAP_HELVETICA_18);
+			iText(SCREEN_WIDTH - 450, SCREEN_HEIGHT - 40, "Player 2: Choose Your Character", GLUT_BITMAP_HELVETICA_18);
+
+			// Player 1 Side (Left)
+			for (int i = 0; i < CHARACTER_COUNT; i++) {
+				Button b = characterButtonsP1[i];
+				iShowImage(b.x, b.y, b.width, b.height, characterImages[i]);
+
+				
+			}
+
+			// Player 2 Side (Right)
+			for (int i = 0; i < CHARACTER_COUNT; i++) {
+				Button b = characterButtonsP2[i];
+				iShowImage(b.x, b.y, b.width, b.height, characterImages[i]);
+
+				
+			}
+
+		}
+		else iText(SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, "Option 2 Screen", GLUT_BITMAP_TIMES_ROMAN_24);
+
+		// Back Button
+		if (backButtonHover) {
+			double zoomFactor = 1.1;
+			int newWidth = backButton.width * zoomFactor;
+			int newHeight = backButton.height * zoomFactor;
+			int newX = backButton.x - (newWidth - backButton.width) / 2;
+			int newY = backButton.y - (newHeight - backButton.height) / 2;
+			iShowImage(newX, newY, newWidth, newHeight, backButtonImage);
+		}
+		else {
+			iShowImage(backButton.x, backButton.y, backButton.width, backButton.height, backButtonImage);
+		}
 	}
+	
 }
 
 
@@ -156,7 +206,47 @@ void handleMenuClick(int button, int state, int mx, int my) {
 		}
 		else if (currentScreen == 10 || currentScreen == 11) { // On final placeholder screens
 			// Check for back button click
-			handleSelectionMenuClick(int mx, int my);
+			if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
+				my >= backButton.y && my <= backButton.y + backButton.height) {
+				currentScreen = 0; // Go back to the Play Sub-Menu
+			}
+		}
+		else if (currentScreen == 10) {
+			// Player 1 selection
+			for (int i = 0; i < CHARACTER_COUNT; i++) {
+				if (mx >= characterButtonsP1[i].x && mx <= characterButtonsP1[i].x + characterButtonsP1[i].width &&
+					my >= characterButtonsP1[i].y && my <= characterButtonsP1[i].y + characterButtonsP1[i].height) {
+					selectedCharacterP1 = i;
+					if (selectedCharacterP1 == i) {
+						iSetColor(0, 255, 0); // green border
+						iRectangle(characterButtonsP1[i].x - 2, characterButtonsP1[i].y - 2, characterButtonsP1[i].width + 4, characterButtonsP1[i].height + 4);
+					}
+					printf("Player 1 selected character %d\n", i);
+					return;
+				}
+			}
+
+			// Player 2 selection
+			for (int i = 0; i < CHARACTER_COUNT; i++) {
+					if (mx >= characterButtonsP2[i].x && mx <= characterButtonsP2[i].x + characterButtonsP2[i].width && 
+						my >= characterButtonsP2[i].y && my <= characterButtonsP2[i].y + characterButtonsP2[i].height) {
+					selectedCharacterP2 = i;
+					if (selectedCharacterP2 == i) {
+						iSetColor(255, 0, 0); // red border
+						iRectangle(characterButtonsP2[i].x - 2, characterButtonsP2[i].y - 2, characterButtonsP2[i].width + 4, characterButtonsP2[i].height + 4);
+					}
+					printf("Player 2 selected character %d\n", i);
+					return;
+				}
+			}
+
+			// Back
+			if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
+				my >= backButton.y && my <= backButton.y + backButton.height) {
+				currentScreen = 0;
+				selectedCharacterP1 = -1;
+				selectedCharacterP2 = -1;
+			}
 		}
 	}
 }
@@ -164,22 +254,22 @@ void handleMenuClick(int button, int state, int mx, int my) {
 // Load all images and set button positions
 void loadMenuAssets() {
 	mainMenuScreen = iLoadImage("BG/main.png");
-	subMenuBackground = iLoadImage("BG/mian.png");
+	subMenuBackground = iLoadImage("BG/main.png");
 
 	// Load Back button image and define its properties
 	backButtonImage = iLoadImage("UiElements/backButton.png");
-	backButton.x = 50;
-	backButton.y = 50;
+	backButton.x = 30;
+	backButton.y = 30;
 	backButton.width = 195;
 	backButton.height = 75;
 
-	optionButtonImages[0] = iLoadImage("UiElements/buttons.png");
-	optionButtonImages[1] = iLoadImage("UiElements/buttons.png");
+	optionButtonImages[0] = iLoadImage("BG/modeSelection1.png");
+	optionButtonImages[1] = iLoadImage("BG/modeSelection2.jpg");
 
 	// two option buttons
-	int optWidth = 250;
-	int optHeight = 250;
-	int spacing = 100;
+	int optWidth = 600;
+	int optHeight = 400;
+	int spacing = 20;
 	int totalWidth = (optWidth * 2) + spacing;
 	int startX = (SCREEN_WIDTH - totalWidth) / 2;
 
@@ -206,8 +296,48 @@ void loadMenuAssets() {
 		buttons[i].width = 300;
 		buttons[i].height = 117;
 	}
+
+	
+}
+
+void loadCharacterSelectionAssets() {
+	// Load character images
+	for (int i = 0; i < CHARACTER_COUNT; i++) {
+		char imagePath[100];
+		sprintf_s(imagePath, sizeof(imagePath), "Characters/char%d.jpg", i + 1);
+		characterImages[i] = iLoadImage(imagePath);
+	}
+
+	// Position settings
+	int charWidth = 100, charHeight = 100;
+	int spacingX = 80, spacingY = 50;
+	int cols = 2, rows = 3;
+
+	// total width and height of the grid
+	int totalWidth = 250;
+	int totalHeight = 400;
+
+	// Starting positions to center the grid vertically
+	int startY = (SCREEN_HEIGHT - totalHeight) / 2;
+	int startX_P1 = 150; // Player 1's grid starts 150px from the left
+	int startX_P2 = SCREEN_WIDTH - 150 - totalWidth; // Player 2's grid starts 150px from right
+
+	for (int i = 0; i < CHARACTER_COUNT; i++) {
+		int row = i / cols;
+		int col = i % cols;
+
+		// Player 1 (Left Side)
+		characterButtonsP1[i].x = startX_P1 + col * (charWidth + spacingX);
+		characterButtonsP1[i].y = startY + (rows - 1 - row) * (charHeight + spacingY);
+		characterButtonsP1[i].width = charWidth;
+		characterButtonsP1[i].height = charHeight;
+
+		// Player 2 (Right Side)
+		characterButtonsP2[i].x = startX_P2 + col * (charWidth + spacingX);
+		characterButtonsP2[i].y = characterButtonsP1[i].y; // Align with P1
+		characterButtonsP2[i].width = charWidth;
+		characterButtonsP2[i].height = charHeight;
+	}
 }
 
 #endif 
-#endif 
-
