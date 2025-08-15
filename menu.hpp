@@ -6,9 +6,17 @@
 
 #define BUTTON_COUNT 4
 #define CHARACTER_COUNT 6
+#define ARENA_COUNT 1
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
+// Main Menu Screen Value = -1
+// Sub Menu Screen Value = 0
+// Settings Screen = 1
+// About Screen = 2
+// 1v1 Character Selection Screen value = 10
+// Arcade Mode Character Selection Screen value = 11
+// Arena Screen value = 20
 
 int currentScreen = -1;
 
@@ -19,21 +27,24 @@ int buttonImages[BUTTON_COUNT];
 const char* buttonNames[BUTTON_COUNT] = { "Play", "Settings", "About", "Exit" };
 int hoveredButtonIndex = -1;
 
-//  Variables for the two options after clicking "Play"
-
+// Variables for the two options after clicking "Play"
 int optionButtonImages[2];
 int hoveredOptionButtonIndex = -1;
 int subMenuBackground;
 
-// Variables for character selection
+// Variables for Character Selection
 int characterImages[CHARACTER_COUNT];
+int characterSelectionBackground;
 int selectedCharacterP1 = -1;
 int selectedCharacterP2 = -1;
+int selectionImages[2];
+
+// Variables for Arena
+int arenaImages[ARENA_COUNT];
 
 // Back button variables
 int backButtonImage;
 bool backButtonHover = false;
-
 
 struct Button {
 	int x;
@@ -42,11 +53,11 @@ struct Button {
 	int height;
 };
 
-Button buttons[BUTTON_COUNT];
-Button backButton;
-Button optionButtons[2];
-Button characterButtonsP1[CHARACTER_COUNT];
-Button characterButtonsP2[CHARACTER_COUNT];
+Button buttons[BUTTON_COUNT]; // Main-menu buttons
+Button backButton; // Back buttons
+Button optionButtons[2]; // Mode Selection buttons
+Button characterButtonsP1[CHARACTER_COUNT]; // Player 1 buttons
+Button characterButtonsP2[CHARACTER_COUNT]; // Player 2 buttons
 
 
 // menu 
@@ -70,6 +81,10 @@ void showMenu() {
 	}
 	else if (currentScreen == 0) { // Play Sub-Menu
 		iShowImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, subMenuBackground);
+		iSetColor(253, 240, 213);
+		iText(590, 680, "Select Mode", GLUT_BITMAP_TIMES_ROMAN_24);
+		iText(300, 580, "1 V 1", GLUT_BITMAP_HELVETICA_18);
+		iText(920, 580, "Arcade", GLUT_BITMAP_HELVETICA_18);
 
 		//two option buttons
 		for (int i = 0; i < 2; i++) {
@@ -100,7 +115,7 @@ void showMenu() {
 			iShowImage(backButton.x, backButton.y, backButton.width, backButton.height, backButtonImage);
 		}
 	}
-	else if (currentScreen == 1 || currentScreen == 2) {
+	else if (currentScreen == 1 || currentScreen == 2) { // Settings and About Screen
 		iSetColor(255, 255, 255);
 		iFilledRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		iSetColor(0, 0, 0);
@@ -120,35 +135,46 @@ void showMenu() {
 		}
 	}
 	else if (currentScreen == 10 || currentScreen == 11) { // play options selection
-		iSetColor(255, 255, 255);
-		iFilledRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
 		// Display which option was chosen
 		if (currentScreen == 10) {
-			iSetColor(255, 255, 255);
-			iFilledRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+			iShowImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, characterSelectionBackground);
 
 			// Titles
-			iSetColor(0, 0, 0);
+			iSetColor(253, 240, 213);
 			iText(100, SCREEN_HEIGHT - 40, "Player 1: Choose Your Character", GLUT_BITMAP_HELVETICA_18);
 			iText(SCREEN_WIDTH - 450, SCREEN_HEIGHT - 40, "Player 2: Choose Your Character", GLUT_BITMAP_HELVETICA_18);
 
 			// Player 1 Side (Left)
 			for (int i = 0; i < CHARACTER_COUNT; i++) {
-				Button b = characterButtonsP1[i];
-				iShowImage(b.x, b.y, b.width, b.height, characterImages[i]);
-
-				
+				iShowImage(characterButtonsP1[i].x, characterButtonsP1[i].y, characterButtonsP1[i].width, characterButtonsP1[i].height, characterImages[i]);
 			}
 
 			// Player 2 Side (Right)
 			for (int i = 0; i < CHARACTER_COUNT; i++) {
-				Button b = characterButtonsP2[i];
-				iShowImage(b.x, b.y, b.width, b.height, characterImages[i]);
-
-				
+				iShowImage(characterButtonsP2[i].x, characterButtonsP2[i].y, characterButtonsP2[i].width, characterButtonsP2[i].height, characterImages[i]);
 			}
 
+			// Show border around selected characters
+			if (selectedCharacterP1 != -1) {
+				iShowImage(characterButtonsP1[selectedCharacterP1].x - 30, characterButtonsP1[selectedCharacterP1].y - 30, 160, 160, selectionImages[0]);
+			}
+			if (selectedCharacterP2 != -1) {
+				iShowImage(characterButtonsP2[selectedCharacterP2].x - 20, characterButtonsP2[selectedCharacterP2].y - 20, 140, 140, selectionImages[1]);
+			}
+			// Start Button on Character Selection
+			if (selectedCharacterP1 != -1 && selectedCharacterP2 != -1) {
+				iShowImage(520, 50, 250, 100, buttonImages[0]);
+			}
+
+			if (hoveredButtonIndex != -1) {
+				int i = hoveredButtonIndex;
+				double zoomFactor = 1.1;
+				int newWidth = 250 * zoomFactor;
+				int newHeight = 100 * zoomFactor;
+				int newX = 520 - (newWidth - 250) / 2;
+				int newY = 50 - (newHeight - 100) / 2;
+				iShowImage(newX, newY, newWidth, newHeight, buttonImages[0]);
+			}
 		}
 		else iText(SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, "Option 2 Screen", GLUT_BITMAP_TIMES_ROMAN_24);
 
@@ -164,6 +190,9 @@ void showMenu() {
 		else {
 			iShowImage(backButton.x, backButton.y, backButton.width, backButton.height, backButtonImage);
 		}
+	}
+	else if (currentScreen == 30) {
+		//iShowImage(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, arenaImages[0]);
 	}
 	
 }
@@ -204,57 +233,42 @@ void handleMenuClick(int button, int state, int mx, int my) {
 				currentScreen = -1; // Go back to the main menu
 			}
 		}
-		else if (currentScreen == 10 || currentScreen == 11) { // On final placeholder screens
+		else if (currentScreen == 10 || currentScreen == 11) { // On Mode-Selection screens
 			// Check for back button click
 			if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
 				my >= backButton.y && my <= backButton.y + backButton.height) {
 				currentScreen = 0; // Go back to the Play Sub-Menu
 			}
-		}
-		else if (currentScreen == 10) {
-			// Player 1 selection
-			for (int i = 0; i < CHARACTER_COUNT; i++) {
-				if (mx >= characterButtonsP1[i].x && mx <= characterButtonsP1[i].x + characterButtonsP1[i].width &&
-					my >= characterButtonsP1[i].y && my <= characterButtonsP1[i].y + characterButtonsP1[i].height) {
-					selectedCharacterP1 = i;
-					if (selectedCharacterP1 == i) {
-						iSetColor(0, 255, 0); // green border
-						iRectangle(characterButtonsP1[i].x - 2, characterButtonsP1[i].y - 2, characterButtonsP1[i].width + 4, characterButtonsP1[i].height + 4);
+			// 1v1 character selection
+			if (currentScreen == 10) {
+				for (int i = 0; i < CHARACTER_COUNT; i++) {
+					// Player 1 selection
+					if (mx >= characterButtonsP1[i].x && mx <= characterButtonsP1[i].x + characterButtonsP1[i].width &&
+						my >= characterButtonsP1[i].y && my <= characterButtonsP1[i].y + characterButtonsP1[i].height) {
+						selectedCharacterP1 = i;						
 					}
-					printf("Player 1 selected character %d\n", i);
-					return;
-				}
-			}
-
-			// Player 2 selection
-			for (int i = 0; i < CHARACTER_COUNT; i++) {
-					if (mx >= characterButtonsP2[i].x && mx <= characterButtonsP2[i].x + characterButtonsP2[i].width && 
+					// Player 2 selection
+					if (mx >= characterButtonsP2[i].x && mx <= characterButtonsP2[i].x + characterButtonsP2[i].width &&
 						my >= characterButtonsP2[i].y && my <= characterButtonsP2[i].y + characterButtonsP2[i].height) {
-					selectedCharacterP2 = i;
-					if (selectedCharacterP2 == i) {
-						iSetColor(255, 0, 0); // red border
-						iRectangle(characterButtonsP2[i].x - 2, characterButtonsP2[i].y - 2, characterButtonsP2[i].width + 4, characterButtonsP2[i].height + 4);
+						selectedCharacterP2 = i;	
 					}
-					printf("Player 2 selected character %d\n", i);
-					return;
-				}
+					// Entering Arena Screen
+					if (selectedCharacterP1 != -1 && selectedCharacterP2 != -1) {
+						if (mx >= 520 && mx <= 520 + 250 && my >= 50 && my <= 50 + 100) {
+							currentScreen = 20;
+						}
+					}
+				}	
 			}
-
-			// Back
-			if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
-				my >= backButton.y && my <= backButton.y + backButton.height) {
-				currentScreen = 0;
-				selectedCharacterP1 = -1;
-				selectedCharacterP2 = -1;
-			}
-		}
+		}	
 	}
 }
 
 // Load all images and set button positions
 void loadMenuAssets() {
 	mainMenuScreen = iLoadImage("BG/main.png");
-	subMenuBackground = iLoadImage("BG/main.png");
+	subMenuBackground = iLoadImage("BG/subMenu.jpg");
+	characterSelectionBackground = iLoadImage("BG/playerSelectionBg.png");
 
 	// Load Back button image and define its properties
 	backButtonImage = iLoadImage("UiElements/backButton.png");
@@ -307,8 +321,14 @@ void loadCharacterSelectionAssets() {
 		sprintf_s(imagePath, sizeof(imagePath), "Characters/char%d.jpg", i + 1);
 		characterImages[i] = iLoadImage(imagePath);
 	}
+	// Load selection images
+	for (int i = 0; i < 2; i++) {
+		char imagePath[100];
+		sprintf_s(imagePath, sizeof(imagePath), "UiElements/characterSelection%d.png", i + 1);
+		selectionImages[i] = iLoadImage(imagePath);
+	}
 
-	// Position settings
+                                                      // Position settings of characters
 	int charWidth = 100, charHeight = 100;
 	int spacingX = 80, spacingY = 50;
 	int cols = 2, rows = 3;
@@ -338,6 +358,15 @@ void loadCharacterSelectionAssets() {
 		characterButtonsP2[i].width = charWidth;
 		characterButtonsP2[i].height = charHeight;
 	}
+
 }
 
+void loadArenaAssets() {
+	// Load Arena Images
+	for (int i = 0; i < ARENA_COUNT; i++) {
+		char imagePath[100];
+		sprintf_s(imagePath, sizeof(imagePath), "BG/arena%d.png", i + 1);
+		arenaImages[i] = iLoadImage(imagePath);
+	}
+}
 #endif 
