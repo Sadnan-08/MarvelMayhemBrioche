@@ -86,6 +86,20 @@ void iPassiveMouseMove(int mx, int my)
 				backButtonHover = true;
 			}
 		}
+		else if (currentScreen == 10) { // On Character Selection
+			// Back button hover
+			if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
+				my >= backButton.y && my <= backButton.y + backButton.height) {
+				backButtonHover = true;
+			}
+
+			// Start button hover 
+			if (selectedCharacterP1 != -1 && selectedCharacterP2 != -1) {
+				if (mx >= 520 && mx <= 520 + 250 && my >= 50 && my <= 50 + 100) {
+					hoveredButtonIndex = 0; 
+				}
+			}
+		}
 		else { // On any other sub-screen (Settings, About, Option 1, Option 2)
 			// back button hover
 			if (mx >= backButton.x && mx <= backButton.x + backButton.width &&
@@ -143,6 +157,7 @@ void loadingBar(){
 			{
 				loadMenuAssets();
 				loadCharacterSelectionAssets();
+				loadArenaAssets();
 			}
 		}
 	}
